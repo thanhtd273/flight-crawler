@@ -3,6 +3,7 @@ package com.thanhtd.flight.crawler.controller;
 import com.thanhtd.flight.crawler.base.APIResponse;
 import com.thanhtd.flight.crawler.constant.ErrorCode;
 import com.thanhtd.flight.crawler.constant.ResponseMessage;
+import com.thanhtd.flight.crawler.dto.CrawlResult;
 import com.thanhtd.flight.crawler.dto.FlightDTO;
 import com.thanhtd.flight.crawler.exception.ExceptionHandler;
 import com.thanhtd.flight.crawler.model.Flight;
@@ -27,8 +28,8 @@ public class FlightController {
     public APIResponse crawlFlights(HttpServletResponse response) {
         long start = System.currentTimeMillis();
         try {
-            List<Flight> flights = flightService.crawlData();
-            log.info("Succeeded crawling flight data from AviationSack, size: {}", flights.size());
+            CrawlResult flights = flightService.crawlData();
+            log.info("Succeeded crawling flight data from AviationSack, size: {}", flights.getTotal());
             return new APIResponse(ErrorCode.SUCCESS, ResponseMessage.SUCCESS, System.currentTimeMillis() - start, flights);
         } catch (Exception e) {
             log.error("Failed to crawl flight data from Aviation Stack, error: {}", e.getMessage());
