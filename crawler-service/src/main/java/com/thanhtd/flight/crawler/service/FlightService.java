@@ -2,6 +2,7 @@ package com.thanhtd.flight.crawler.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.thanhtd.flight.crawler.constant.ErrorCode;
+import com.thanhtd.flight.crawler.dto.CrawlResult;
 import com.thanhtd.flight.crawler.dto.FlightDTO;
 import com.thanhtd.flight.crawler.exception.LogicException;
 import com.thanhtd.flight.crawler.model.Flight;
@@ -17,7 +18,7 @@ public interface FlightService {
 
     Flight createFlight(FlightDTO flightDTO) throws LogicException;
 
-    List<Flight> crawlData() throws LogicException, JsonProcessingException;
+    CrawlResult crawlData() throws LogicException, JsonProcessingException;
 
     ErrorCode deleteFlight(String flightId) throws LogicException;
 }

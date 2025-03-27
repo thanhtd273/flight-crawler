@@ -6,6 +6,7 @@ import com.thanhtd.flight.crawler.constant.DataStatus;
 import com.thanhtd.flight.crawler.constant.ErrorCode;
 import com.thanhtd.flight.crawler.dao.FlightDao;
 import com.thanhtd.flight.crawler.dto.AviationHttpResponse;
+import com.thanhtd.flight.crawler.dto.CrawlResult;
 import com.thanhtd.flight.crawler.dto.FlightAirportDTO;
 import com.thanhtd.flight.crawler.dto.FlightDTO;
 import com.thanhtd.flight.crawler.exception.LogicException;
@@ -99,23 +100,44 @@ public class FlightServiceImpl implements FlightService {
     }
 
     @Override
-    public List<Flight> crawlData() throws LogicException, JsonProcessingException {
-        // Call API
-       int offset = 100;
-       int limit = 100;
-       String url = String.format("%s/flights?access_key=%s&offset=%d&limit=%d", apiUrl, apiAccessKey, offset, limit);
-       AviationHttpResponse<FlightDTO> apiResponse = fetchFlightData(url);
-       if (ObjectUtils.isEmpty(apiResponse) || ObjectUtils.isEmpty(apiResponse.getData())) {
-           throw new LogicException(ErrorCode.DATA_NULL, "Fetch data from aviation stack return null");
-       }
-       List<FlightDTO> rawFlights = apiResponse.getData();
-        // Save data on ScyllaDB
-       List<Flight> flights = saveManyFlights(rawFlights);
+    public CrawlResult crawlData() throws LogicException, JsonProcessingException {
 
-        // Publish flights to kafka
-        String message = objectMapper.writeValueAsString(flights);
-        kafkaTemplate.send(TOPIC, message);
-        return flights;
+        // Call API
+       int offset = 1;
+       long limit = 100;
+       long amount = Long.MAX_VALUE;
+       CrawlResult crawlResult = new CrawlResult();
+       String category = "flights";
+       String baseUrl = String.format("%s/%s", apiUrl, category);
+       crawlResult.setCategory(category);
+       crawlResult.setApiSource(baseUrl);
+       int numOfRequest = 0;
+       int numOfData = 0;
+       do {
+           String url = String.format("%s?access_key=%s&offset=%d&limit=%d", baseUrl, apiAccessKey, offset, limit);
+           AviationHttpResponse<FlightDTO> apiResponse = fetchFlightData(url);
+           if (ObjectUtils.isEmpty(apiResponse) || ObjectUtils.isEmpty(apiResponse.getData())) {
+               throw new LogicException(ErrorCode.DATA_NULL, "Fetch data from aviation stack return null");
+           }
+           numOfRequest ++;
+           numOfData += apiResponse.getPagination().getCount();
+           if (offset == 1) {
+               amount = apiResponse.getPagination().getTotal();
+           }
+
+           // Save data on ScyllaDB
+           List<FlightDTO> rawFlights = apiResponse.getData();
+           List<Flight> flights = saveManyFlights(rawFlights);
+
+           // Publish flights to kafka
+           String message = objectMapper.writeValueAsString(flights);
+           kafkaTemplate.send(TOPIC, message);
+
+           offset ++;
+       } while (offset * limit < amount);
+       crawlResult.setTotal(numOfData);
+       crawlResult.setNumberOfRequest(numOfRequest);
+        return crawlResult;
     }
 
     @Override

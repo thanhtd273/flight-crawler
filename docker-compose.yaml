@@ -1,76 +1,74 @@
 services:
-    scylla:
-      image: scylladb/scylla:latest
-      container_name: scylla
-      ports:
-        - "9042:9042"  # CQL port
-        - "9160:9160"  # Thrift port (optional)
-        - "10000:10000" # REST API port (optional)
-      volumes:
-        - scylla-data:/var/lib/scylla
-      command: --authenticator PasswordAuthenticator --authorizer CassandraAuthorizer
-      environment:
-        - SCYLLA_JMX_PORT=7199
-        - auth_superuser_name=admin
-        - auth_superuser_salted_password=$2y$05$7QxuqczPu5eKCnEGW6HJyeYT1Y6d66/g9BIf030TTsA1Qq206xMkm
-      healthcheck:
-        test: [ "CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES" ]
-        interval: 10s
-        timeout: 5s
-        retries: 5
-    elasticsearch:
-      container_name: elasticsearch
-      image: elasticsearch:8.17.3
-      environment:
-        - xpack.security.enabled=false
-        - "discovery.type=single-node"
-      ports:
-        - "9200:9200"
-      networks:
-        - es-net
-      volumes:
-        - es-data:/usr/share/elasticsearch/data
-#    kibana:
-#      container_name: kibana
-#      image: kibana:8.17.3
-#      environment:
-#        - ELASTICSEARCH_HOSTS=http://es-container:9200
-#      networks:
-#        - es-net
-#      depends_on:
-#        - elasticsearch
-#      ports:
-#        - "5601:5601"
-#    zookeeper:
-#      container_name: zookeeper
-#      image: confluentinc/cp-zookeeper:7.4.4
-#      environment:
-#        ZOOKEEPER_CLIENT_PORT: 2181
-#        ZOOKEEPER_TICK_TIME: 2000
-#      ports:
-#        - 22181:2181
-    kafka:
-      image: apache/kafka:latest
-      hostname: kafka
-      container_name: kafka
-      ports:
-        - "9092:9092"
-      environment:
-        KAFKA_BROKER_ID: 1
-        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
-        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
-        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-        KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
-        KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-        KAFKA_PROCESS_ROLES: broker,controller
-        KAFKA_NODE_ID: 1
-        KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
-        KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
-        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-        KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
-        KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
-        CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+  scylla:
+    image: scylladb/scylla:latest
+    container_name: scylla
+    ports:
+      - "9042:9042" # CQL port
+    volumes:
+      - scylla-data:/var/lib/scylla
+    command: --authenticator PasswordAuthenticator --authorizer CassandraAuthorizer
+    environment:
+      - SCYLLA_JMX_PORT=7199
+      - auth_superuser_name=admin
+      - auth_superuser_salted_password=$2y$05$7QxuqczPu5eKCnEGW6HJyeYT1Y6d66/g9BIf030TTsA1Qq206xMkm
+    healthcheck:
+      test: ["CMD", "cqlsh", "-e", "DESCRIBE KEYSPACES"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:8.17.3
+    environment:
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+    ports:
+      - "9200:9200"
+    networks:
+      - es-net
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+  #    kibana:
+  #      container_name: kibana
+  #      image: kibana:8.17.3
+  #      environment:
+  #        - ELASTICSEARCH_HOSTS=http://es-container:9200
+  #      networks:
+  #        - es-net
+  #      depends_on:
+  #        - elasticsearch
+  #      ports:
+  #        - "5601:5601"
+  #    zookeeper:
+  #      container_name: zookeeper
+  #      image: confluentinc/cp-zookeeper:7.4.4
+  #      environment:
+  #        ZOOKEEPER_CLIENT_PORT: 2181
+  #        ZOOKEEPER_TICK_TIME: 2000
+  #      ports:
+  #        - 22181:2181
+  kafka:
+    image: apache/kafka:latest
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
 volumes:
   scylla-data:
     driver: local
