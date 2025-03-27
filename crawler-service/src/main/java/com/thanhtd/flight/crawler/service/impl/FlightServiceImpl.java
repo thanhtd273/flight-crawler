@@ -101,7 +101,7 @@ public class FlightServiceImpl implements FlightService {
     @Override
     public List<Flight> crawlData() throws LogicException, JsonProcessingException {
         // Call API
-       int offset = 1;
+       int offset = 100;
        int limit = 100;
        String url = String.format("%s/flights?access_key=%s&offset=%d&limit=%d", apiUrl, apiAccessKey, offset, limit);
        AviationHttpResponse<FlightDTO> apiResponse = fetchFlightData(url);

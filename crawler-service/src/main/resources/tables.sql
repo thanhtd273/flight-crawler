@@ -8,6 +8,8 @@ CREATE TABLE flight_data.cities (
     updated_at timestamp,
     status text
 );
+create index name_idx on flight_data.cities (name);
+create index code_idx on flight_data.cities (code);
 
 CREATE TABLE flight_data.airlines (
     airline_id uuid PRIMARY KEY,
@@ -18,6 +20,8 @@ CREATE TABLE flight_data.airlines (
     updated_at timestamp,
     status text
 );
+create index airline_name_idx on flight_data.airlines (name);
+create index airline_code_idx on flight_data.airlines (code);
 
 CREATE TABLE flight_data.airports (
     airport_id uuid PRIMARY KEY,
@@ -29,6 +33,8 @@ CREATE TABLE flight_data.airports (
     updated_at timestamp,
     status text
 );
+create index airport_name_idx on flight_data.airports (name);
+create index airport_code_idx on flight_data.airports (code);
 
 CREATE TYPE flight_data.airport_location (
     airport_name text,
